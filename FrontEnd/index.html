@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+
+    <script src="/src/js/script.js"></script>
+
+<script>
+    function Submit(){
+        var name=$("#name").val();
+        var EmailId=$("#EmailId").val();
+
+    $.ajax({
+            url: "http://127.0.0.1:8000/user",
+            type: "POST",
+            
+            data: {"name":name,EmailId:EmailId},
+            success: function(response) {
+            if (response.redirect_to) {
+                window.location.href = response.redirect_to;
+            }
+        }
+    });
+}
+
+
+// $(document).ready(function(){
+//                         $.ajax({
+//             url:"http://127.0.0.1:8000/AllUsers",
+//             type:'GET',
+//             success:function(users){
+//                 users.forEach(user => {
+//                     $("#usersBody").append( `
+//                     <tr>
+//                         <td>${user.id}</td>
+//                         <td>${user.EmailId}</td>
+//                         <td>${user.name}</td>
+//                     </tr>
+//                     `)
+//                 });
+//             }
+//         });
+// })
+
+        
+
+       // document.getElementById('usersBody').innerHTML =''
+    </script>
+</head>
+<body style="background-color: #ffffaa;">
+    <div style="display: flex;justify-content: center;">
+        <div>
+        <div style="color:coral;margin-top: 60px;font-size:80px;font-weight: bold;font-family: 'Courier New', Courier, monospace;">
+            W E L C O M E
+        </div>
+        <div style="margin-top: 50px;font-family: 'verdana'  ;font-size: 20px;">
+            <label style="margin-left: 180px;margin-bottom: 20px;" >Enter Your Email Id</label>
+        </div>
+        <form method="post">
+            <div style="display: flex;justify-content: center;">
+                <input style="width: 350px;" id="EmailId" name="EmailId" type="text" class="form-control" >               
+            </div>  
+            <div style="margin-top: 20px;">
+                <div style="margin-left: 180px;margin-bottom: 20px;font-family: 'verdana'  ;font-size: 20px;">Enter Your Name:</div>
+                <input style="width: 350px;margin-left: 140px;" id="name" name="name" type="text" class="form-control" >               
+            </div>  
+              <div style="display: flex;justify-content: center;margin-top: 25px;">
+                <input type="button" onclick="Submit()" value="Continue" class="btn btn-primary" style="margin-left: 20px;width: 100px;">               
+            </div>  
+        </form>
+        
+
+        </div>
+        </div>
+
+    </div>
+    <!-- <table>
+        <thead>
+            <th>
+                <td></td>
+            </th>
+        </thead>
+        <tbody id="usersBody" >
+        </tbody>
+    </table> -->
+</body>
+</html>

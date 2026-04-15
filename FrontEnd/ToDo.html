@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="node_modules/bootstrap-icons/font/bootstrap-icons.css">
+
+
+    <script src="/src/js/script.js"></script>
+    <script>
+        
+        var EmailId;
+        $(document).ready(function(){
+            const params = new URLSearchParams(window.location.search);
+            $("#queryName").text(params.get("name"));
+            document.getElementById('queryEmail').value=params.get("EmailId");
+            EmailId = params.get("EmailId");
+        });
+
+        window.DeleteTask = function(id){
+        console.log("Delete Task Started");
+        var element = document.getElementById(`task_${id}`);
+        element.remove();
+
+        $.ajax({
+            url: "http://127.0.0.1:8000/api/deleteToDo",
+            // contentType: "application/json",
+            type: "DELETE",
+            data: {"id":id},
+            success: function() {
+        }
+    });
+    console.log("Delete Task Ended");
+    }
+ 
+        function createToDo(){
+            var todoItem  = $("#TodoInput").val();
+           // var EmailId = $("#queryEmail").val();
+            var EmailId = document.getElementById('queryEmail').value;
+            var status = "Pending";
+            
+            if(todoItem==null|todoItem==""){
+                alert("Please enter an item to add");
+                return
+            }
+            console.log("start ajax");
+            console.log(EmailId);
+            $.ajax({
+                
+                url: "http://127.0.0.1:8000/api/ToDo",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({Title:todoItem,EmailId:EmailId,Completed:status}),
+                success: function(response) {
+                    $("#tasks").append
+                    (
+                        `<div id="task_${response.id}" style='display:flex;justify-content:space-between;margin:5px;height:40px;border:solid;border-radius: 10px;'>
+                        <div style="display: grid;grid-template-columns: 2fr 11fr;padding: 5px;">
+                            <input type='checkbox' id='checkbox_${response.id}' onclick="updateToDo(${response.id})" value='todoItem' style="width:20px;height: 20px;margin-right: 10px;" class="form-check" >
+                         ${todoItem}
+                        </div>    
+                        
+                        <span onclick="DeleteTask(${response.id})" style="color:red;font-size:20px;height: 20px;padding: 2px" class="bi bi-x-circle-fill"></span>
+                    </div>`)
+        }
+    });
+    console.log("Completed")
+        }
+    function updateToDo(id){
+        var checkbox = document.getElementById(`checkbox_${id}`);
+        var status;
+        if(checkbox.checked){
+            status="Completed"
+        }else{
+            status="Pending"
+        }
+
+            $.ajax({
+            url: "http://127.0.0.1:8000/api/updateToDo",
+            // contentType: "application/json",
+            type: "PUT",
+            data: {"taskId":id,"status":status},
+            success: function() {
+        }
+    });
+
+    }
+
+    function GetAll(){
+        document.getElementById('tasks').innerHTML ="";
+        $.ajax({
+            url: "http://127.0.0.1:8000/api/AllToDo",
+            // contentType: "application/json",
+            type: "GET",
+            data: {"EmailId":EmailId},
+            success: function(response) {
+
+                $.each(response,function(index,todo){
+                    $("#tasks").append
+                    (
+                        
+                        `<div id="task_${todo.id}" style='display:flex;justify-content:space-between;margin:5px;height:40px;border:solid;border-radius: 10px;'>
+                        <div style="display: grid;grid-template-columns: 2fr 11fr;padding: 5px;">
+                            <input type='checkbox' id='checkbox_${todo.id}' onclick="updateToDo(${todo.id})" value='todoItem' style="width:20px;height: 20px;margin-right: 10px;" class="form-check" >
+                         ${todo.Title}
+                        </div>    
+                        
+                        <span onclick="DeleteTask(${todo.id})" style="color:red;font-size:20px;height: 20px;padding: 2px" class="bi bi-x-circle-fill"></span>
+                    </div>`)
+
+                    let checkbox = document.getElementById(`checkbox_${todo.id}`);
+                    
+                    if(todo.Completed=="Completed"){
+                        checkbox.checked = true;
+                    }else{
+                        checkbox.checked = false;
+                    }
+                    
+                })
+
+        }
+    });
+    }
+
+    function Inprogress(){
+        $.ajax({
+            url: "http://127.0.0.1:8000/api/InProgressToDo",
+            // contentType: "application/json",
+            type: "GET",
+            data: {"EmailId":EmailId},
+            success: function(response) {
+                $("#tasks").empty();
+
+                $.each(response,function(index,todo){
+                    $("#tasks").append
+                    (
+                        
+                        `<div id="task_${todo.id}" style='display:flex;justify-content:space-between;margin:5px;height:40px;border:solid;border-radius: 10px;'>
+                        <div style="display: grid;grid-template-columns: 2fr 11fr;padding: 5px;">
+                            <input type='checkbox' id='checkbox_${todo.id}' onclick="updateToDo(${todo.id})" value='todoItem' style="width:20px;height: 20px;margin-right: 10px;" class="form-check" >
+                         ${todo.Title}
+                        </div>    
+                        
+                        <span onclick="DeleteTask(${todo.id})" style="color:red;font-size:20px;height: 20px;padding: 2px" class="bi bi-x-circle-fill"></span>
+                    </div>`)
+
+                    let checkbox = document.getElementById(`checkbox_${todo.id}`);
+                    
+
+                    checkbox.checked = false;
+                    
+                    
+                })
+
+        }
+    });
+    }
+
+    function FinishAll(){
+    document.getElementById('tasks').innerHTML="";
+    const EmailId = new URLSearchParams(window.location.search).get("EmailId");
+    
+    $.ajax({
+        url: `http://127.0.0.1:8000/api/FinishAllToDo?EmailId=${EmailId}`, 
+        type: "PUT",
+
+        success: function(response) {
+                
+                
+                let checkbox;
+                $.each(response,function(index,todo){
+                    checkbox = document.getElementById(`checkbox_${todo.id}`);
+                    $("#tasks").append
+                    (
+                        
+                        `<div id="task_${todo.id}" style='display:flex;justify-content:space-between;margin:5px;height:40px;border:solid;border-radius: 10px;'>
+                        <div style="display: grid;grid-template-columns: 2fr 11fr;padding: 5px;">
+                            <input type='checkbox' id='checkbox_${todo.id}' onclick="updateToDo(${todo.id})" value='todoItem' style="width:20px;height: 20px;margin-right: 10px;" class="form-check" >
+                         ${todo.Title}
+                        </div>    
+                        
+                        <span onclick="DeleteTask(${todo.id})" style="color:red;font-size:20px;height: 20px;padding: 2px" class="bi bi-x-circle-fill"></span>
+                    </div>`)
+
+                    
+                    
+                                     
+                })
+                document.querySelectorAll("#tasks input[type='checkbox']").forEach(cb => {
+                    cb.checked = true;
+                });
+        },
+
+        error: function(err) {
+            
+        }
+    });
+}
+
+    function ClearAll(){
+    const EmailId = new URLSearchParams(window.location.search).get("EmailId");
+
+    $.ajax({
+        url: "http://127.0.0.1:8000/api/ClearAllToDo?EmailId=" + encodeURIComponent(EmailId),
+        type: "DELETE",
+
+        success: function(res){
+            $("#tasks").empty(); 
+        },
+
+        error: function(err){
+        }
+    });
+    }
+
+    </script>
+</head>
+<body style="background-color: #10ffa0;">
+    
+     <div style="margin: 50px 0px 0px 20px;font-size: 35px;">Hii.. <span id="queryName"></span></div>
+    <div hidden><input type="text" id="queryEmail"></div>
+    <div style="display: flex;justify-content: center;margin-top:10px">
+        <div>
+            <div style="margin-left: 160px  ;font-size:50px;font-family: 'Courier New', Courier, monospace;">TODO</div>
+            <div style="display: flex;">
+                <input type="text" name="TodoInput" id="TodoInput" class="form-control" style="width:450px" placeholder="Add A Todo Item...">
+                <input type="button" onclick="createToDo()" value="Add" class="btn" style="width:150px;background-color: skyblue;margin-left: 10px;">            
+            </div>
+            <div style="margin-top: 20px;display: flex;">
+                <div id="tasks" style="height: 300px;width: 450px;border:solid;border-radius: 5px;border-width: 1px;border-color: grey;background-color: aliceblue  ;">
+                    
+
+
+
+                    <!-- <div style='display:flex;justify-content:space-between;margin:5px;height:40px;border:solid;border-radius: 10px;'>
+                        <div style="display: grid;grid-template-columns: 2fr 10fr;padding: 5px;">
+                            <input type='checkbox' value='todoItem' style="width:20px;height: 20px;margin-right: 10px;" class="form-check" >
+                            write Some thing
+                        </div>    
+                        
+                        <span style="color:red;font-size:20px;height: 20px;padding: 2px" class="bi bi-x-circle-fill"></span>
+                    </div> -->
+
+
+                </div>
+                <div style="border: solid;border-radius: 5px;width:150px;margin-left: 10px;background-color: antiquewhite;">
+                    <input type="button" name="All" onclick="GetAll()" value="All" style="width:120px;margin: 20px 10px 0px 10px">
+                    <input type="button" name="" onclick="Inprogress()" value="In Progress" style="width:120px;margin:40px 10px 0px 10px">    
+                    <input type="button" name="" onclick="FinishAll()" value="Finish All" style="width:120px;margin:40px 10px 0px 10px">
+                    <input type="button" name="" onclick="ClearAll()" value="Clear All" style="width:120px;margin:40px 10px 0px 10px">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
